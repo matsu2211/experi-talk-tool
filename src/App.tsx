@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Check, 
@@ -17,7 +17,8 @@ import {
   Share2,
   Trophy,
   History,
-  Plane
+  Plane,
+  Copy
 } from 'lucide-react';
 
 // --- Types ---
@@ -166,6 +167,11 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setCopied(false);
+  }, [currentIndex]);
 
   const currentQuestions = useMemo(() => {
     if (!selectedCategory) return [];
@@ -189,6 +195,13 @@ export default function App() {
     setAnswers([]);
     setView('play');
     setFeedback(null);
+  };
+
+  const handleCopy = () => {
+    const text = currentQuestions[currentIndex].text;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleAnswer = (value: boolean) => {
@@ -357,8 +370,27 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  <div className="inline-block self-start px-2 py-0.5 bg-black text-white text-[9px] font-black uppercase tracking-widest mb-6">
-                    {selectedCategory && CATEGORY_MAP[selectedCategory].label}
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="inline-block px-2 py-0.5 bg-black text-white text-[9px] font-black uppercase tracking-widest">
+                      {selectedCategory && CATEGORY_MAP[selectedCategory].label}
+                    </div>
+                    <button
+                      onClick={handleCopy}
+                      className="p-2 border-2 border-black brutal-shadow-sm bg-white hover:bg-yellow-400 transition-colors flex items-center gap-2 group/copy"
+                      title="お題をコピー"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-4 h-4 text-green-600" />
+                          <span className="text-[10px] font-black uppercase">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 group-hover/copy:scale-110 transition-transform" />
+                          <span className="text-[10px] font-black uppercase">Copy</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                   
                   <h3 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight">
